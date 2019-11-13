@@ -1,0 +1,46 @@
+﻿<Window x:Class="ChargerDockDashBoard.ChargingCurveWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ChargerDockDashBoard"
+        xmlns:charting="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        mc:Ignorable="d"
+        Title="ChargingCurveWindow" Height="450" Width="800"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="8*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Row="0" Grid.Column="0" Margin="5" Orientation="Vertical">
+            <TextBlock Text="Power (W):" HorizontalAlignment="Left" FontSize="20"/>
+            <TextBlock x:Name="tbPower" Text="0" FontSize="16" Margin="0,0,0,20"/>
+
+        </StackPanel>
+        <charting:Chart x:Name="chargingChart" Grid.Row="0" Grid.Column="1" Title="Charging Voltage and Current" Margin="5" 
+                        Background="LightBlue">
+            <charting:Chart.Axes>
+                <charting:LinearAxis Orientation="X"/>
+                <charting:LinearAxis Orientation="Y" Location="Left"></charting:LinearAxis>
+                <charting:LinearAxis Orientation="Y" Location="Right"></charting:LinearAxis>
+            </charting:Chart.Axes>
+            <charting:Chart.Series>
+                <charting:LineSeries x:Name="VoltageCurve" Title="Voltage"
+                                 IndependentValueBinding="{Binding Time}"
+                                 DependentValueBinding="{Binding Voltage}">
+                    
+                </charting:LineSeries>
+                <charting:LineSeries x:Name="CurrentCurve" Title="Current"
+                                 IndependentValueBinding="{Binding Time}"
+                                 DependentValueBinding="{Binding Current}">
+                    
+                </charting:LineSeries>
+
+            </charting:Chart.Series>
+        </charting:Chart>
+    </Grid>
+</Window>
