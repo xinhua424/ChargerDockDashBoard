@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
 
 namespace ChargerDockDashBoard
 {
@@ -23,6 +24,7 @@ namespace ChargerDockDashBoard
     public partial class ChargerCell : UserControl
     {
         private ChargerCellProperty _chargerCellProperty=new ChargerCellProperty();
+
         public ChargerCellProperty chargerCellProperty
         {
             get => _chargerCellProperty;
@@ -35,6 +37,7 @@ namespace ChargerDockDashBoard
                 _chargerCellProperty.Status = value.Status;
                 _chargerCellProperty.TestTime = value.TestTime;
                 _chargerCellProperty.Voltage = value.Voltage;
+                _chargerCellProperty.HistoryData = value.HistoryData;
                 _chargerCellProperty.TipMessage = value.TipMessage;
             }
         }
@@ -91,13 +94,13 @@ namespace ChargerDockDashBoard
             private ChargerCellStatus _status=ChargerCellStatus.Idle;
             private Color _cellColor=Colors.Blue;
             private int _cellID=1;
-            public  DateTime ChargingStartTime=new DateTime(2000,1,1,0,0,0);
             private string _tipMessage = "Status";
+            private List<DataPoint> _chargingHistoryData = new List<DataPoint>();
+            public  DateTime ChargingStartTime = new DateTime(2000,1,1,0,0,0);
 
             public ChargerCellProperty()
             {
                 Status = ChargerCellStatus.Idle;
-                
             }
 
             public string DeviceSN
@@ -170,6 +173,15 @@ namespace ChargerDockDashBoard
                 }
             }
 
+            public List<DataPoint> HistoryData
+            {
+                get => _chargingHistoryData;
+                set
+                {
+                    _chargingHistoryData = value;
+                }
+            }
+
             public ChargerCellStatus Status
             {
                 get => _status;
@@ -185,13 +197,17 @@ namespace ChargerDockDashBoard
                     
                 }
             }
+            public void InsertChargingData(DateTime dt, double v, double c)
+            {
+                this._chargingHistoryData.Add(new DataPoint(dt, v, c));
+            }
 
             protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
             {
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
 
-            protected void UpdateCellStatus()
+            private void UpdateCellStatus()
             {
                 switch(_status)
                 {
@@ -219,7 +235,18 @@ namespace ChargerDockDashBoard
                         break;
                 }
             }
+        }
 
+        public double GetChargingEnergy()
+        {
+            double energy = 0;
+            
+            for(int point=0;point<_chargerCellProperty.HistoryData.Count-1;point++)
+            {
+                double interval = _chargerCellProperty.HistoryData[point + 1].Time.Subtract(_chargerCellProperty.HistoryData[point].Time).TotalSeconds;
+                energy += _chargerCellProperty.HistoryData[point].Voltage * _chargerCellProperty.HistoryData[point].Current * interval;
+            }
+            return energy;
         }
 
         private void cellBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -231,9 +258,66 @@ namespace ChargerDockDashBoard
                 {
                     //MessageBox.Show("Double click");
                     ChargingCurveWindow ccw = new ChargingCurveWindow();
+                    int cellID = cc.chargerCellProperty.CellID;
+
+                    ccw.SerialData = new ObservableCollection<DataPoint>(cc.chargerCellProperty.HistoryData);
+                    ccw.CurveProfile.Slot = cc.chargerCellProperty.CellID;
+                    ccw.CurveProfile.SerialNumber = cc.chargerCellProperty.DeviceSN;
+                    ccw.CurveProfile.Energy = Math.Round(cc.GetChargingEnergy(), 1);
+                    ccw.CurveProfile.Elapsed = Convert.ToInt32(TimeSpan.Parse(cc.chargerCellProperty.TestTime).TotalSeconds);
+
                     ccw.Show();
+
                 }
             }
+        }
+    }
+
+    public class DataPoint: INotifyPropertyChanged
+    {
+        private DateTime _time;
+        private double _voltage;
+        private double _current;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public DateTime Time
+        {
+            get { return _time; }
+            set
+            {
+                _time = value;
+                OnPropertyChanged("Time");
+            }
+        }
+        public double Voltage
+        {
+            get { return _voltage; }
+            set
+            {
+                _voltage = value;
+                OnPropertyChanged("Voltage");
+            }
+        }
+        public double Current
+        {
+            get { return _current; }
+            set
+            {
+                _current = value;
+                OnPropertyChanged("Current");
+            }
+        }
+        public DataPoint(DateTime time, double voltage, double current)
+        {
+            Time = time;
+            Voltage = voltage;
+            Current = current;
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 

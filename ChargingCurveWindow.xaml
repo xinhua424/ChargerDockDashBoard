@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ChargerDockDashBoard"
         xmlns:charting="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
         mc:Ignorable="d"
-        Title="ChargingCurveWindow" Height="450" Width="800"
+        Title="ChargingCurveWindow" Height="600" Width="1000"
         WindowStartupLocation="CenterScreen">
     <Grid>
         <Grid.RowDefinitions>
@@ -17,30 +17,57 @@
             <ColumnDefinition Width="8*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Row="0" Grid.Column="0" Margin="5" Orientation="Vertical">
-            <TextBlock Text="Power (W):" HorizontalAlignment="Left" FontSize="20"/>
-            <TextBlock x:Name="tbPower" Text="0" FontSize="16" Margin="0,0,0,20"/>
-
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Slot:" HorizontalAlignment="Left" FontSize="20" Margin="0,0,5,0"/>
+                <TextBlock x:Name="tbSlot" Text="{Binding Slot}" MinWidth="40" FontSize="20" Margin="0,0,0,20" TextAlignment="Left"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="SN:" HorizontalAlignment="Left" FontSize="20" Margin="0,0,5,0"/>
+                <TextBlock x:Name="tbSerialNumber" Text="{Binding SerialNumber,Mode=OneWay}" MinWidth="80" FontSize="20" Margin="0,0,0,20" TextAlignment="Left"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Elapsed:" HorizontalAlignment="Left" FontSize="20" Margin="0,0,5,0"/>
+                <TextBlock x:Name="tbElapsed" Text="{Binding Elapsed}" MinWidth="40" FontSize="20" Margin="0,0,0,20" TextAlignment="Right"/>
+                <TextBlock Text="s" Margin="10,0,0,0" HorizontalAlignment="Left" FontSize="20"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Energy:" HorizontalAlignment="Left" FontSize="20" Margin="0,0,5,0"/>
+                <TextBlock x:Name="tbEnergy" MinWidth="50" Text="{Binding Energy}" FontSize="20" Margin="0,0,0,20" TextAlignment="Right"/>
+                <TextBlock Text="J" Margin="10,0,0,0" HorizontalAlignment="Left" FontSize="20"/>
+            </StackPanel>
         </StackPanel>
-        <charting:Chart x:Name="chargingChart" Grid.Row="0" Grid.Column="1" Title="Charging Voltage and Current" Margin="5" 
-                        Background="LightBlue">
-            <charting:Chart.Axes>
-                <charting:LinearAxis Orientation="X"/>
-                <charting:LinearAxis Orientation="Y" Location="Left"></charting:LinearAxis>
-                <charting:LinearAxis Orientation="Y" Location="Right"></charting:LinearAxis>
-            </charting:Chart.Axes>
-            <charting:Chart.Series>
-                <charting:LineSeries x:Name="VoltageCurve" Title="Voltage"
-                                 IndependentValueBinding="{Binding Time}"
-                                 DependentValueBinding="{Binding Voltage}">
-                    
-                </charting:LineSeries>
-                <charting:LineSeries x:Name="CurrentCurve" Title="Current"
-                                 IndependentValueBinding="{Binding Time}"
-                                 DependentValueBinding="{Binding Current}">
-                    
-                </charting:LineSeries>
 
-            </charting:Chart.Series>
+        <charting:Chart x:Name="ChargingCurveChart" Title="Charging Voltage And Current" Grid.Row="0" Grid.Column="1">
+            <charting:LineSeries x:Name="lsVoltage" IndependentValueBinding="{Binding Time}" DependentValueBinding="{Binding Voltage}" ItemsSource="{Binding}" 
+                                 Background="Transparent" Title="Voltage">
+                <charting:LineSeries.DataPointStyle>
+                    <Style TargetType="{x:Type charting:LineDataPoint}">
+                        <Setter Property="Height" Value="5"/>
+                        <Setter Property="Width" Value="5" />
+                        <Setter Property="Background" Value="Green"/>
+                    </Style>
+                </charting:LineSeries.DataPointStyle>
+                <charting:LineSeries.IndependentAxis>
+                    <charting:DateTimeAxis Title="Time" Orientation="X"/>
+                </charting:LineSeries.IndependentAxis>
+                <charting:LineSeries.DependentRangeAxis>
+                    <charting:LinearAxis Title="Voltage [V]" Location="Left" Orientation="Y" Minimum="0" Maximum="6"/>
+                </charting:LineSeries.DependentRangeAxis>
+            </charting:LineSeries>
+            <charting:LineSeries x:Name="lsCurrent" IndependentValueBinding="{Binding Time}" DependentValueBinding="{Binding Current}" ItemsSource="{Binding}" 
+                                 Background="Transparent" Title="Current" Cursor="Cross">
+                <charting:LineSeries.DataPointStyle>
+                    <Style TargetType="{x:Type charting:LineDataPoint}">
+                        <Setter Property="Height" Value="5"/>
+                        <Setter Property="Width" Value="5" />
+                        <Setter Property="Background" Value="Red"/>
+                    </Style>
+                </charting:LineSeries.DataPointStyle>
+                <charting:LineSeries.DependentRangeAxis>
+                    <charting:LinearAxis Title="Current [A]" Location="Right" Orientation="Y" Minimum="0" Maximum="1"/>
+                </charting:LineSeries.DependentRangeAxis>
+            </charting:LineSeries>
         </charting:Chart>
+
     </Grid>
 </Window>
